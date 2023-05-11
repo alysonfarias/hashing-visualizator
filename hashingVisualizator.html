@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Value Histogram</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.17/tailwind.min.css">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+  </head>
+  <body class="bg-gray-100">
+    <div class="container mx-auto px-2 py-3">
+
+    </div>
+
+    <div class="wrapper">
+      <form class="bg-white shadow-md rounded px-2 pt-1 pb-4 mb-2">
+        <div class="mb-2">
+          <label class="block text-gray-700 font-bold mb-2" for="table-size">
+            Table Size:
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="table-size" type="number" name="table-size" value="9">
+        </div>
+        <div class="mb-2">
+          <label class="block text-gray-700 font-bold mb-2" for="initial-index">
+            Initial Index:
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="initial-index" type="number" name="initialIndex" value="0">
+        </div>
+        <div class="mb-2">
+          <label class="block text-gray-700 font-bold mb-2" for="final-index">
+            Final Index:
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="final-index" type="number" name="finalIndex" value="10">
+        </div>
+        <div class="flex items-center justify-between">
+          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+            Generate Histogram
+          </button>
+        </div>
+      </form>
+
+      <div class="bg-white rounded-lg shadow-lg px-4 py-4">
+        <p class="mb-4 text-gray-700">
+          Uniformidade: A probabilidade de um elemento ser mapeado para uma posição da tabela é a mesma para todos os elementos.
+        </p>
+        <p class="mb-4 text-gray-700">
+          Independencia: A probabilidade de um elemento ser mapeado para uma posição da tabela é independente da posição que ele seria mapeado.
+        </p>
+        <p class="mb-4 text-gray-700">
+          Estabilidade: A probabilidade de um elemento ser mapeado para uma posição da tabela é independente dos elementos que já foram mapeados.
+        </p>
+      </div>
+    </div>
+  <div id="chart-container"></div>
+
+  <script>
+    const form = document.querySelector('form');
+    const chartContainer = document.getElementById('chart-container');
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+
+      const tableSize = parseInt(form.elements['table-size'].value);
+      const initialIndex = parseInt(form.elements['initialIndex'].value);
+      const finalIndex = parseInt(form.elements['finalIndex'].value);
+
+      const values = [];
+      for (let i = initialIndex; i < finalIndex; i++) {
+        const value = i % tableSize;
+        values.push(value);
+      }
+
+      const counts = {};
+      values.forEach(value => {
+        counts[value] = counts[value] ? counts[value] + 1 : 1;
+      });
+
+      const chartOptions = {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: 'Value Histogram'
+        },
+        xAxis: {
+          categories: Object.keys(counts)
+        },
+        yAxis: {
+          title: {
+            text: 'Count'
+          }
+        },
+        series: [{
+          name: 'Count',
+          data: Object.values(counts)
+        }]
+      };
+
+      Highcharts.chart(chartContainer, chartOptions);
+    });
+  </script>
+</body>
+</html>
