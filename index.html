@@ -31,41 +31,75 @@
           </label>
           <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="final-index" type="number" name="finalIndex" value="10">
         </div>
+        <div class="mb-2">
+          <label class="block text-gray-700 font-bold mb-2" for="hash-method">
+            Hashing Method:
+          </label>
+          <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="hash-method" name="hashMethod">
+            <option value="linear">Linear Probing (Enlaçamento Deslocado)</option>
+            <option value="limit">Limit (Limite)</option>
+            <option value="mid-square">Mid-Square (Meio Quadrado)</option>
+            <option value="extraction">Extraction (Extração)</option>
+            <option value="universal">Universal Hashing (Hashing Universal)</option>
+          </select>
+        </div>
         <div class="flex items-center justify-between">
           <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
             Generate Histogram
           </button>
         </div>
+        <div class="mb-2">
+          <label class="block text-gray-700 font-bold mb-2" for="search-term">
+            Search Term:
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="search-term" type="text" name="searchTerm" placeholder="Enter a value to search">
+        </div>
       </form>
 
-      <div class="bg-white rounded-lg shadow-lg px-4 py-4">
-        <p class="mb-4 text-gray-700">
-          Uniformidade: A probabilidade de um elemento ser mapeado para uma posição da tabela é a mesma para todos os elementos.
-        </p>
-        <p class="mb-4 text-gray-700">
-          Independencia: A probabilidade de um elemento ser mapeado para uma posição da tabela é independente da posição que ele seria mapeado.
-        </p>
-        <p class="mb-4 text-gray-700">
-          Estabilidade: A probabilidade de um elemento ser mapeado para uma posição da tabela é independente dos elementos que já foram mapeados.
-        </p>
-      </div>
     </div>
   <div id="chart-container"></div>
 
-  <script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
     const chartContainer = document.getElementById('chart-container');
-
     form.addEventListener('submit', event => {
       event.preventDefault();
+
+      // Retrieve the search term
+      const searchTerm = form.elements['searchTerm'].value.trim().toLowerCase();
 
       const tableSize = parseInt(form.elements['table-size'].value);
       const initialIndex = parseInt(form.elements['initialIndex'].value);
       const finalIndex = parseInt(form.elements['finalIndex'].value);
+      const hashMethod = form.elements['hashMethod'].value;
 
       const values = [];
       for (let i = initialIndex; i < finalIndex; i++) {
-        const value = i % tableSize;
+        let value;
+
+        // Apply selected hashing method
+        switch (hashMethod) {
+          case 'linear':
+            value = i % tableSize;
+            break;
+          case 'limit':
+            value = i % (tableSize - 1);
+            break;
+          case 'mid-square':
+            value = Math.floor(Math.pow(i, 2) / 100) % tableSize;
+            break;
+          case 'extraction':
+            value = parseInt(i.toString().slice(1, 3)) % tableSize;
+            break;
+          case 'universal':
+            value = (i * 7 + 3) % tableSize;
+            break;
+          default:
+            value = i % tableSize;
+            break;
+        }
+
         values.push(value);
       }
 
@@ -73,6 +107,18 @@
       values.forEach(value => {
         counts[value] = counts[value] ? counts[value] + 1 : 1;
       });
+
+      let filteredCounts = counts;
+
+      // Apply filtering if search term is provided
+      if (searchTerm) {
+        filteredCounts = {};
+        Object.keys(counts).forEach(key => {
+          if (key.includes(searchTerm)) {
+            filteredCounts[key] = counts[key];
+          }
+        });
+      }
 
       const chartOptions = {
         chart: {
@@ -82,7 +128,7 @@
           text: 'Value Histogram'
         },
         xAxis: {
-          categories: Object.keys(counts)
+          categories: Object.keys(filteredCounts)
         },
         yAxis: {
           title: {
@@ -91,12 +137,12 @@
         },
         series: [{
           name: 'Count',
-          data: Object.values(counts)
+          data: Object.values(filteredCounts)
         }]
       };
 
       Highcharts.chart(chartContainer, chartOptions);
     });
-  </script>
-</body>
-</html>
+
+  });
+</script>
